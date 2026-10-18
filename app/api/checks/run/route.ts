@@ -42,6 +42,21 @@ export async function POST(req: Request) {
 
     const pageCheckData = await pageCheckRes.json();
 
+const apiCheckRes = await fetch(
+  "http://localhost:3000/api/checks/api",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      previewUrl: previewData.url,
+    }),
+  }
+);
+
+const apiCheckData = await apiCheckRes.json();
+
     // 3. Return everything together
     return Response.json({
       sha,

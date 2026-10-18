@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Repositories from "./Repositories"
 
 export default function Hero() {
   const [prs, setPrs] = useState<any[]>([]);
@@ -34,6 +35,7 @@ export default function Hero() {
               </p>
             </div>
           ))}
+          <Repositories/>
         </div>
       </section>
     </>

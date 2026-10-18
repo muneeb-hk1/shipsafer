@@ -61,7 +61,7 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
           </Link>
 
           <div className="mb-8">
-            <h1 className="text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
+            <h1 className="text-3xl font-semibold tracking-tight text-neutral-950 sm:text-3xl">
               {forgetPassword ? "Reset your password" : isLogin ? "Log in to your account" : "Create your account"}
             </h1>
             <p className="mt-2 text-sm leading-6 text-neutral-500">

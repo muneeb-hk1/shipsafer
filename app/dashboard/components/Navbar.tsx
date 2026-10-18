@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react"
 import Link from "next/link";
 import { ChevronDown, Menu, X, PanelLeft } from "lucide-react";
 import Image from "next/image";
@@ -12,6 +13,7 @@ type NavbarProps = {
 
 export default function Navbar({ onMenuClick, sidebarOpen }: NavbarProps) {
     const [menuOpen, setMenuOpen] = useState(false);
+    const { data: session, status } = useSession();
 
     const navItems = [
         {
@@ -52,29 +54,32 @@ export default function Navbar({ onMenuClick, sidebarOpen }: NavbarProps) {
             <div className="flex h-[55px] items-center justify-between px-4 sm:px-6 lg:px-2">
                 {/* Logo */}
                 <div className="flex items-center">
-                    <button type="button" aria-label="Open sidebar" aria-controls="dashboard-sidebar" aria-expanded={sidebarOpen} onClick={onMenuClick} className="mr-2 flex h-8 w-8 items-center justify-center rounded-full cursor-pointer hover:bg-black/5 md:hidden"><PanelLeft className="w-4"/></button>
+                    <button type="button" aria-label="Open sidebar" aria-controls="dashboard-sidebar" aria-expanded={sidebarOpen} onClick={onMenuClick} className="mr-2 flex h-8 w-8 items-center justify-center rounded-full cursor-pointer hover:bg-black/5 md:hidden"><PanelLeft className="w-4" /></button>
                     <Link href="/" className="hidden md:flex shrink-0 items-center gap-2">
                         <span className="text-[18px] font-semibold leading-none text-black">
-                            Welcome
+                            Welcome 
+                            {" "}
+                            <span>
+                                {status === "authenticated" && (
+                                    <span className="text-[18px] font-semibold text-black">
+                                        {session.user?.name}
+                                    </span>
+                                )}
+                            </span>
                         </span>
                     </Link>
                 </div>
 
 
-               
+
 
                 {/* Desktop actions */}
                 <div className="flex items-center gap-3">
                     <a><Image src="/muneeb.png" alt="Logo" width={50} height={50} className="rounded-full h-9 w-9 object-cover" /></a>
-                    <Link
-                        href="/login"
-                        className="flex items-center rounded-full bg-black px-5 py-2 text-[15px] text-white"
-                    >
-                        Get started
-                    </Link>
+                    
                 </div>
 
-               
+
             </div>
 
             {/* Mobile dropdown */}

@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link";
 import { X } from "lucide-react";
+import {useRouter} from "next/navigation"
 
 type DashboardView = "dashboard" | "recent-activity";
 
@@ -17,6 +18,7 @@ export default function Sidebar({
     activeView,
     onViewChange,
 }: SidebarProps) {
+    const router = useRouter()
     return (
         <>
             <aside
@@ -66,6 +68,7 @@ export default function Sidebar({
                             </button>
                         </li>
                     </ul>
+                    <button className="absolute bottom-4 bg-red-700/60 py-3 px-8 text-white rounded-md cursor-pointer text-sm" onClick={()=>{router.push("/login")}}>Logout</button>
                 </nav>
             </aside>
         </>
