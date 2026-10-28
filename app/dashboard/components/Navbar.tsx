@@ -1,108 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { useSession } from "next-auth/react"
-import Link from "next/link";
-import { ChevronDown, Menu, X, PanelLeft } from "lucide-react";
-import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { PanelLeft, ShieldCheck } from "lucide-react";
 
 type NavbarProps = {
-    sidebarOpen: boolean;
-    onMenuClick: () => void;
-}
+  sidebarOpen: boolean;
+  onMenuClick: () => void;
+  activeView: "dashboard" | "recent-activity";
+};
 
-export default function Navbar({ onMenuClick, sidebarOpen }: NavbarProps) {
-    const [menuOpen, setMenuOpen] = useState(false);
-    const { data: session, status } = useSession();
-
-    const navItems = [
-        {
-            label: "Products",
-            dropdown: true,
-            items: [
-                { label: "Product A", href: "/products/a" },
-                { label: "Product B", href: "/products/b" },
-                { label: "Product C", href: "/products/c" },
-            ],
-        },
-        {
-            label: "Solutions",
-            dropdown: true,
-            items: [
-                { label: "For Startups", href: "/solutions/startups" },
-                { label: "For Enterprise", href: "/solutions/enterprise" },
-            ],
-        },
-        {
-            label: "Learning & support",
-            dropdown: true,
-            items: [
-                { label: "Documentation", href: "/docs" },
-                { label: "Guides", href: "/guides" },
-                { label: "Support", href: "/support" },
-            ],
-        },
-        {
-            label: "Pricing",
-            dropdown: false,
-            href: "/pricing",
-        },
-    ];
-
-    return (
-        <header className="w-full shrink-0 bg-white border-b border-black/10">
-            <div className="flex h-[55px] items-center justify-between px-4 sm:px-6 lg:px-2">
-                {/* Logo */}
-                <div className="flex items-center">
-                    <button type="button" aria-label="Open sidebar" aria-controls="dashboard-sidebar" aria-expanded={sidebarOpen} onClick={onMenuClick} className="mr-2 flex h-8 w-8 items-center justify-center rounded-full cursor-pointer hover:bg-black/5 md:hidden"><PanelLeft className="w-4" /></button>
-                    <Link href="/" className="hidden md:flex shrink-0 items-center gap-2">
-                        <span className="text-[18px] font-semibold leading-none text-black">
-                            Welcome 
-                            {" "}
-                            <span>
-                                {status === "authenticated" && (
-                                    <span className="text-[18px] font-semibold text-black">
-                                        {session.user?.name}
-                                    </span>
-                                )}
-                            </span>
-                        </span>
-                    </Link>
-                </div>
-
-
-
-
-                {/* Desktop actions */}
-                <div className="flex items-center gap-3">
-                    <a><Image src="/muneeb.png" alt="Logo" width={50} height={50} className="rounded-full h-9 w-9 object-cover" /></a>
-                    
-                </div>
-
-
-            </div>
-
-            {/* Mobile dropdown */}
-            <div
-                className={`overflow-hidden border-t border-black/10 bg-white transition-all duration-300 lg:hidden ${menuOpen ? "max-h-[600px]" : "max-h-0 border-t-0"
-                    }`}
-            >
-                <nav className="flex flex-col px-6 py-3">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.label}
-                            href="#"
-                            className="flex items-center justify-between border-b border-black/10 py-5 text-[18px] font-medium"
-                        >
-                            {item.label}
-
-                            {item.dropdown && <ChevronDown size={18} />}
-                        </Link>
-                    ))}
-
-
-                </nav>
-            </div>
-        </header>
-    );
+export default function Navbar({ onMenuClick, sidebarOpen, activeView }: NavbarProps) {
+  const { data: session } = useSession();
+  return (
+    <header className="flex min-h-[73px] items-center justify-between gap-[18px] border-b border-[#edebf3] px-6 py-4 max-[768px]:min-h-[66px] max-[768px]:px-[18px] max-[768px]:py-3.5 max-[541px]:gap-2 max-[541px]:px-3.5">
+      <div className="flex items-center gap-2.5 text-xs">
+        <button type="button" aria-label="Open sidebar" aria-controls="dashboard-sidebar" aria-expanded={sidebarOpen} onClick={onMenuClick} className="hidden size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-[#e9e4f0] bg-[#fdfcfe] text-[#6d617c] max-[768px]:inline-flex">
+          <PanelLeft size={19} />
+        </button>
+        <span>{activeView === "dashboard" ? "Dashboard" : "Recent Activity"}</span>
+      </div>
+      <div className="flex min-w-0 items-center gap-5 max-[768px]:gap-0">
+        <span className="max-w-60 truncate text-[11px] text-[#77717f] max-[1151px]:hidden">Welcome{session?.user?.name ? `, ${session.user.name}` : ""}</span>
+        <span className="inline-flex items-center gap-[7px] rounded-lg border border-[#e7e0fa] bg-[linear-gradient(120deg,#f0e9ff,#f6f3fd)] px-3 py-[9px] text-[11px] whitespace-nowrap text-[#6a4cb1] max-[541px]:gap-[5px] max-[541px]:p-2 max-[541px]:text-[10px]"><ShieldCheck size={15} /> Your workspace</span>
+      </div>
+    </header>
+  );
 }
