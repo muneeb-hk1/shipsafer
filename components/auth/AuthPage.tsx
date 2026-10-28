@@ -9,19 +9,66 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "next-auth/react";
+import { Eye, EyeOff } from "lucide-react";
 
 type AuthMode = "login" | "signup";
 
 export default function AuthPage({ mode }: { mode: AuthMode }) {
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const isLogin = mode === "login";
   const [forgetPassword, setForgetPassword] = useState(false);
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!isLogin) {
-      router.push("/login");
-    }
-  };
+
+
+
+      const formData = new FormData(e.currentTarget);
+      const name = String(formData.get("name") ?? "");
+      const email = String(formData.get("email") ?? "");
+      const password = String(formData.get("password") ?? "");
+
+      try {
+        if (isLogin) {
+          const result = await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+          });
+
+          if (!result || !result.ok || result.error) {
+            alert("Login failed. Check your email and password.");
+            return;
+          }
+
+          router.push("/dashboard");
+          router.refresh();
+          return;
+        }
+
+        const response = await fetch("/api/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, email, password }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          alert(data.error || "Signup failed");
+          return;
+        }
+
+        router.push("/login");
+      } catch {
+        alert("Request failed. Please try again.");
+      }
+    };
+
+
+
 
   return (
     <main className="grid min-h-svh bg-white lg:grid-cols-[1.05fr_0.95fr]">
@@ -142,18 +189,31 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
                       </Button>
                     )}
                   </div>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete={isLogin ? "current-password" : "new-password"}
-                    placeholder={
-                      isLogin ? "Enter your password" : "At least 8 characters"
-                    }
-                    minLength={isLogin ? undefined : 8}
-                    required
-                    className="h-12 px-4"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete={isLogin ? "current-password" : "new-password"}
+                      placeholder={isLogin ? "Enter your password" : "At least 8 characters"}
+                      minLength={isLogin ? undefined : 8}
+                      required
+                      className="h-12 pl-4 pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-controls="password"
+                      className="absolute inset-y-0 right-0 z-10 flex w-12 cursor-pointer items-center justify-center rounded-r-lg text-neutral-600 hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2"
+                    >
+                      {showPassword ? (
+                        <EyeOff size={20} aria-hidden="true" />
+                      ) : (
+                        <Eye size={20} aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <Button
@@ -193,7 +253,7 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
                   <button
                     type="button"
                     onClick={() =>
-                      signIn("github", { 
+                      signIn("github", {
                         callbackUrl: "/dashboard",
                       })
                     }

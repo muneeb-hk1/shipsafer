@@ -17,7 +17,7 @@ GitHub sign-in identifies the user. A GitHub App installation gives the server a
 | --- | --- |
 | `app/` | Pages and server API endpoints |
 | `app/layout.tsx` | Shared page wrapper, styles, navigation, and sign-in session |
-| `app/dashboard/components/` | Dashboard, sidebar, pull requests, and repository list |
+| `app/dashboard/components/` | Dashboard, sidebar, pull requests, and repository list |    
 | `components/auth/AuthPage.tsx` | Login and signup screens |
 | `components/pages/Hero.tsx` | Landing-page content |
 | `components/ui/` | Reusable buttons, inputs, and cards |
