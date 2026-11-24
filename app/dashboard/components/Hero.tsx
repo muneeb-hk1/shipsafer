@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { ArrowRight, FolderGit2, GitPullRequest, Globe2, LockKeyhole } from "lucide-react";
@@ -19,6 +19,8 @@ export default function Hero() {
   const [reposLoading, setReposLoading] = useState(true);
   const [pullsError, setPullsError] = useState(false);
   const [reposError, setReposError] = useState(false);
+  const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
+  // const [selectedFullName, setSelectedFullName] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -27,17 +29,156 @@ export default function Hero() {
         const response = await fetch(url, { signal: controller.signal });
         const data = await response.json();
         if (!response.ok || !Array.isArray(data)) throw new Error("Unable to load GitHub data");
-        setData(data);
+        if (controller.signal.aborted) return;
+setData(data);
       } catch {
         if (!controller.signal.aborted) setError(true);
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
     }
-    void load<PullRequest>("/api/github/pulls", setPrs, setPullsError, setPullsLoading);
-    void load<Repository>("/api/github/repositories", setRepos, setReposError, setReposLoading);
+    // void load<PullRequest>("/api/github/pulls", setPrs, setPullsError, setPullsLoading);
+    void load<Repository>(
+  "/api/github/repositories",
+  (repositories) => {
+    setRepos(repositories);
+    setSelectedRepo(repositories[0] ?? null);
+  },
+  setReposError,
+  setReposLoading
+);
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+  if (!selectedRepo) {
+    setPrs([]);
+    setPullsLoading(false);
+    setPullsError(false);
+    return;
+  }
+
+  const controller = new AbortController();
+
+  async function loadPullRequests(repository: Repository) {
+    setPrs([]);
+    setPullsLoading(true);
+    setPullsError(false);
+
+    try {
+      const query = new URLSearchParams({
+        owner: repository.owner,
+        repo: repository.name,
+      });
+
+      const response = await fetch(
+        `/api/github/pulls?${query.toString()}`,
+        { signal: controller.signal }
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to load pull requests");
+      }
+
+      const data = await response.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid pull request response");
+      }
+
+      if (!controller.signal.aborted) {
+        setPrs(data);
+      }
+    } catch {
+      if (!controller.signal.aborted) {
+        setPullsError(true);
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        setPullsLoading(false);
+      }
+    }
+  }
+
+  const repository = selectedRepo;
+
+const refresh = () => {
+  if (document.visibilityState === "visible") {
+    void loadPullRequests(repository);
+  }
+};
+
+refresh();
+
+const timer = window.setInterval(refresh, 15_000);
+window.addEventListener("focus", refresh);
+
+return () => {
+  window.clearInterval(timer);
+  window.removeEventListener("focus", refresh);
+  controller.abort();
+};
+}, [selectedRepo]);
+
+// void loadPullRequests(selectedRepo);
+
+// return () => controller.abort();
+
+
+// useEffect(() => {
+//   const repository = repos.find(
+//     (repo) => repo.fullName === selectedFullName
+//   );
+
+//   if (!repository) {
+//     setPrs([]);
+//     setPullsError(false);
+//     setPullsLoading(false);
+//     return;
+//   }
+
+//   const controller = new AbortController();
+
+//   async function loadPullRequests() {
+//     setPullsLoading(true);
+//     setPullsError(false);
+//     setPrs([]);
+
+//     const query = new URLSearchParams({
+//       owner: repository!.owner,
+//       repo: repository!.name,
+//     });
+
+//     try {
+//       const response = await fetch(
+//         `/api/github/pulls?${query.toString()}`,
+//         { signal: controller.signal }
+//       );
+
+//       const data = await response.json();
+
+//       if (!response.ok || !Array.isArray(data)) {
+//         throw new Error("Unable to load pull requests");
+//       }
+
+//       if (!controller.signal.aborted) {
+//         setPrs(data);
+//       }
+//     } catch {
+//       if (!controller.signal.aborted) {
+//         setPullsError(true);
+//       }
+//     } finally {
+//       if (!controller.signal.aborted) {
+//         setPullsLoading(false);
+//       }
+//     }
+//   }
+
+//   void loadPullRequests();
+
+//   return () => controller.abort();
+// }, [selectedFullName, repos]);
 
   const metrics = [
     { label: "Connected Repositories", value: repos.length, icon: FolderGit2, loading: reposLoading, error: reposError, note: "Your GitHub projects" },
@@ -60,7 +201,54 @@ export default function Hero() {
           </section>
         ))}
       </div>
+      <div>
+  <label htmlFor="repository">Select repository: </label>
+
+  <select
+    id="repository"
+    value={selectedRepo?.id ?? ""}
+    className="cursor-pointer"
+    disabled={reposLoading || reposError || repos.length === 0}
+    onChange={(event) => {
+      const repository = repos.find(
+        (repo) => String(repo.id) === event.target.value
+      );
+
+      setSelectedRepo(repository ?? null);
+    }}
+  >
+    <option value="">Choose a repository</option>
+
+    {repos.map((repo) => (
+      <option key={repo.id} value={repo.id}>
+        {repo.fullName}
+      </option>
+    ))}
+  </select>
+</div>
       <Repositories repos={repos} loading={reposLoading} error={reposError} />
+      {/* <div>
+  <label htmlFor="pr-repository">
+    Pull requests ke liye repository select karo
+  </label>
+
+  <select
+    id="pr-repository"
+    value={selectedFullName}
+    onChange={(event) => {
+      setSelectedFullName(event.target.value);
+    }}
+    disabled={reposLoading || reposError || repos.length === 0}
+  >
+    <option value="">Select a repository</option>
+
+    {repos.map((repo) => (
+      <option key={repo.id} value={repo.fullName}>
+        {repo.fullName}
+      </option>
+    ))}
+  </select>
+</div> */}
       <section className="min-w-0 rounded-[20px] border border-[#eeebf3] bg-[#fdfcfe] p-[18px] shadow-[0_3px_10px_#30254702] max-[541px]:rounded-[17px] max-[541px]:p-3.5" aria-busy={pullsLoading}>
         <div className="mb-4 flex min-h-7 items-center justify-between gap-3 max-[541px]:gap-2 [&_h2]:m-0 [&_h2]:text-[17px] [&_h2]:font-medium [&_h2]:tracking-[-0.4px] max-[541px]:[&_h2]:text-[15px]"><h2>Open Pull Requests</h2><span className="rounded-[7px] border border-[#f0edf5] bg-[#f8f7fb] px-[9px] py-1.5 text-[10px] text-[#81798d] max-[541px]:px-1.5 max-[541px]:py-[5px] max-[541px]:text-[8px]">Pull requests</span></div>
         {pullsLoading ? <div className="flex min-h-[168px] flex-col items-center justify-center gap-[9px] rounded-[14px] border border-dashed border-[#e8e2f2] bg-[#faf9fd] px-3 py-6 text-center text-xs text-[#93869f] [&_h3]:m-0 [&_h3]:text-[13px] [&_h3]:font-medium [&_h3]:text-[#53485f] [&_p]:m-0 [&_p]:max-w-[340px] [&_p]:text-[11px] [&_p]:leading-[1.7] [&_p]:text-[#8d8396]" role="status">Loading pull requests…</div> : pullsError ? (

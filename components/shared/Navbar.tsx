@@ -4,42 +4,21 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, Menu, X } from "lucide-react";
 
+type NavLink = {
+  label: string;
+  href: string;
+};
+
+type NavItem = NavLink & {
+  dropdown?: boolean;
+  items?: NavLink[];
+};
+
+// Add links when their destination pages are ready; do not use empty placeholders.
+const navItems: NavItem[] = [];
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const navItems = [
-    {
-      label: "Products",
-      dropdown: true,
-      items: [
-        { label: "Product A", href: "/products/a" },
-        { label: "Product B", href: "/products/b" },
-        { label: "Product C", href: "/products/c" },
-      ],
-    },
-    {
-      label: "Solutions",
-      dropdown: true,
-      items: [
-        { label: "For Startups", href: "/solutions/startups" },
-        { label: "For Enterprise", href: "/solutions/enterprise" },
-      ],
-    },
-    {
-      label: "Learning & support",
-      dropdown: true,
-      items: [
-        { label: "Documentation", href: "/docs" },
-        { label: "Guides", href: "/guides" },
-        { label: "Support", href: "/support" },
-      ],
-    },
-    {
-      label: "Pricing",
-      dropdown: false,
-      href: "/pricing",
-    },
-  ];
 
   return (
     <header className="fixed w-screen bg-none top-0 left-0 z-50 px-10">
@@ -54,10 +33,10 @@ export default function Navbar() {
         {/* Desktop nav */}
         <nav className="hidden items-center gap-12 md:flex">
           {navItems.map((item) => (
-            <div key={item.label} className="relative group">
+            <div key={item.href} className="relative group">
               {/* Main link / trigger */}
               <Link
-                href={item.href || "#"}
+                href={item.href}
                 className="flex items-center gap-1.5 text-[15px] font-medium"
               >
                 {item.label}
@@ -76,7 +55,7 @@ export default function Navbar() {
                   <div className="min-w-[200px] rounded-xl border bg-white py-2 shadow-lg">
                     {item.items.map((subItem) => (
                       <Link
-                        key={subItem.label}
+                        key={subItem.href}
                         href={subItem.href}
                         className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-black"
                       >
@@ -125,8 +104,8 @@ export default function Navbar() {
         <nav className="flex flex-col px-6 py-3">
           {navItems.map((item) => (
             <Link
-              key={item.label}
-              href="#"
+              key={item.href}
+              href={item.href}
               className="flex items-center justify-between border-b border-black/10 py-5 text-[18px] font-medium"
             >
               {item.label}

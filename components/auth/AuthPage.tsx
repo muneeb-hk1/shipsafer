@@ -18,6 +18,35 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
   const router = useRouter();
   const isLogin = mode === "login";
   const [forgetPassword, setForgetPassword] = useState(false);
+  const [resetPending, setResetPending] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState("");
+
+  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (resetPending) return;
+    const email = String(new FormData(e.currentTarget).get("email") ?? "");
+    setResetPending(true);
+    setResetMessage("");
+    setResetError("");
+    try {
+      const response = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setResetError(data.error || "Unable to send a reset link. Please try again.");
+      } else {
+        setResetMessage(data.message);
+      }
+    } catch {
+      setResetError("Unable to send a reset link. Please try again.");
+    } finally {
+      setResetPending(false);
+    }
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -112,7 +141,9 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
               {forgetPassword ? "Reset your password" : isLogin ? "Log in to your account" : "Create your account"}
             </h1>
             <p className="mt-2 text-sm leading-6 text-neutral-500">
-              {isLogin
+              {forgetPassword
+                ? "Enter your email and we’ll send you a link to choose a new password."
+                : isLogin
                 ? "Enter your details to continue to ShipSafer."
                 : "A few details and you’ll be ready to start shipping."}
             </p>
@@ -120,23 +151,30 @@ export default function AuthPage({ mode }: { mode: AuthMode }) {
 
           {forgetPassword ? (
             <div>
-              <form>
+              <form onSubmit={handleForgotPassword} aria-busy={resetPending}>
                 <div className="flex flex-col gap-1">
                   <label htmlFor="Email">Email address</label>
                   <Input
                     type="email"
                     id="Email"
+                    name="email"
+                    autoComplete="email"
+                    maxLength={254}
                     placeholder="you@example.com"
                     className="h-12 w-full rounded-lg border border-neutral-300 bg-transparent px-4 text-sm placeholder:text-neutral-400 focus:border-black focus:ring-1 focus:ring-black"
                     required
                   />
                 </div>
-                <div className="mt-3">
-                  <Button type="submit" className="p-5 cursor-pointer">Send reset link</Button>
+                {resetMessage && <p role="status" className="mt-3 text-sm text-green-700">{resetMessage}</p>}
+                {resetError && <p role="alert" className="mt-3 text-sm text-red-600">{resetError}</p>}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button type="submit" disabled={resetPending} className="p-5 cursor-pointer">{resetPending ? "Sending…" : "Send reset link"}</Button>
                   <Button
                     type="button"
                     onClick={() => {
                       setForgetPassword(false);
+                      setResetMessage("");
+                      setResetError("");
                     }}
                     className="p-5 cursor-pointer"
                   >

@@ -1,0 +1,21 @@
+.header { position: fixed; inset: 0 0 auto; z-index: 50; background: #ffffffed; backdrop-filter: blur(14px); color: #242424; font-family: var(--font-geist-sans), Arial, sans-serif; font-weight: 400; }
+.inner { display: flex; align-items: center; max-width: 1280px; height: 78px; margin: 0 auto; padding: 0 24px; gap: 30px; }
+.brand { display: inline-flex; align-items: center; gap: 8px; font-size: 21px; font-weight: 550; letter-spacing: -1px; }
+.desktopNav { display: flex; align-items: center; gap: 30px; margin-left: 38px; font-size: 14px; color: #656565; }
+.desktopNav a:hover { color: #171717; }
+.getStarted { display: inline-flex; justify-content: center; align-items: center; margin-left: auto; min-height: 40px; padding: 9px 20px; border-radius: 100px; font-size: 14px; background: #242424; color: white; transition: background .2s; }
+.getStarted:hover { background: #454545; }
+.menuButton { display: none; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: #f3f3f3; cursor: pointer; }
+.mobileNav { padding: 8px 24px 20px; border-bottom: 1px solid #ededed; background: white; }
+.mobileNav a { display: block; padding: 13px 0; font-size: 16px; }
+.header :is(a, button):focus-visible { outline: 2px solid #242424; outline-offset: 5px; }
+@media (min-width: 701px) { .mobileNav { display: none; } }
+@media (max-width: 700px) {
+  .inner { height: 72px; padding: 0 20px; gap: 13px; }
+  .brand { font-size: 19px; }
+  .brand svg { width: 25px; }
+  .desktopNav { display: none; }
+  .getStarted { font-size: 12px; min-height: 37px; padding: 8px 15px; }
+  .menuButton { display: inline-flex; width: 38px; height: 38px; }
+}
+@media (prefers-reduced-motion: reduce) { .getStarted { transition: none; } }

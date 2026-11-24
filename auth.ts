@@ -47,6 +47,30 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.AUTH_GITHUB_SECRET!,
     })
   ],
+  session:{
+    strategy:"jwt",
+  },
+  callbacks: {
+  async jwt({ token, user, account }) {
+    if (user) {
+      delete token.appUserId;
+
+      if (account?.provider === "credentials") {
+        token.appUserId = user.id;
+      }
+    }
+
+    return token;
+  },
+
+  async session({ session, token }) {
+    if (session.user) {
+      session.user.id = token.appUserId;
+    }
+
+    return session;
+  },
+},
 
   secret: process.env.AUTH_SECRET,
 };

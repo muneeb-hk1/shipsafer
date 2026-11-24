@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -8,9 +9,28 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-  name         String
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  passwordHash String?
+  createdAt DateTime @default(now())
+
+  passwordResetTokenHash   String?   @unique
+  passwordResetExpiresAt   DateTime?
+  passwordResetRequestedAt DateTime?
+
+  githubConnection GitHubConnection?
+}
+
+model GitHubConnection {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  githubUserId         String    @unique
+  encryptedAccessToken String
+  encryptedRefreshToken String?
+  accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  createdAt            DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
